@@ -1,0 +1,50 @@
+import os
+from PIL import Image
+from fpdf import FPDF
+
+def mm_from_px(px, dpi=96):
+
+    return px * 25.4 / dpi
+
+def create_pdf_from_jpgs(source_folder, output_pdf_path):
+    jpg_files = [f for f in os.listdir(source_folder) if f.lower().endswith('.jpg')]
+
+    if not jpg_files:
+        print("Geen .jpg-bestanden gevonden in de opgegeven map.")
+        return
+
+    jpg_files.sort()
+
+    pdf = FPDF(unit="mm")
+
+    for filename in jpg_files:
+        filepath = os.path.join(source_folder, filename)
+        try:
+            with Image.open(filepath) as img:
+                width_px, height_px = img.size
+                width_mm = mm_from_px(width_px)
+                height_mm = mm_from_px(height_px)
+
+                pdf.add_page(format=(width_mm, height_mm))
+                pdf.image(filepath, x=0, y=0, w=width_mm, h=height_mm)
+                print(f"Toegevoegd: {filename}")
+        except Exception as e:
+            print(f"Fout bij verwerken van {filename}: {e}")
+
+    pdf.output(output_pdf_path)
+    print(f"\nPDF opgeslagen als: {output_pdf_path}")
+
+def main():
+    print("JPG naar PDF converter (met fpdf2)")
+
+    source_folder = input("Voer het pad in naar de map met .jpg-afbeeldingen: ").strip()
+    output_pdf_path = input("Voer het pad in voor het uitvoerbestand (bijv. output.pdf): ").strip()
+
+    if not os.path.exists(source_folder):
+        print("De opgegeven map bestaat niet.")
+        return
+
+    create_pdf_from_jpgs(source_folder, output_pdf_path)
+
+if __name__ == "__main__":
+    main()
